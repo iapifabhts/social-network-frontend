@@ -30,6 +30,7 @@
 		padding: 20px 0;
 		display: flex;
 		flex-direction: column;
+		margin-bottom: auto;
 	}
 
 	&__link {
@@ -42,6 +43,15 @@
 		display: flex;
 		column-gap: 10px;
 		align-items: center;
+	}
+
+	&__logout {
+		display: flex;
+		column-gap: 10px;
+		cursor: pointer;
+		border-radius: 10px;
+		background-color: #ffffff;
+		padding: 10px;
 	}
 }
 </style>
@@ -66,18 +76,35 @@
 				<span class="sidebar__content"><People />People</span>
 			</router-link>
 		</div>
+		<div class="sidebar__logout" @click="logoutHandler">
+			<Logout /> Logout
+		</div>
 	</aside>
 </template>
 
 <script setup>
 import { useUserStore } from "../stores/user.js"
 import { useRoute } from "vue-router"
+import { useRouter } from "vue-router"
+import { logout } from "../requests/user.js"
 import Profile from "../icons/Profile.vue"
 import Feed from "../icons/Feed.vue"
 import People from "../icons/People.vue"
+import Logout from "../icons/Logout.vue"
 
 const store = useUserStore()
+const router = useRouter()
 const route = useRoute()
+
+const logoutHandler = () => {
+	logout()
+		.then(() => {
+			router.push("/")
+		})
+		.catch(({ message }) => {
+			console.log(message)
+		})
+}
 
 const getImage = id => {
 	return id ? `http://localhost:80/files/${id}` : `${import.meta.env.VITE_URL}/src/images/avatar.jpg`

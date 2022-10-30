@@ -19,6 +19,53 @@
 		justify-items: center;
 		align-items: center;
 		text-transform: uppercase;
+		margin-bottom: 10px;
+		color: #72b2e4;
+	}
+
+	&__posts {
+		display: flex;
+		flex-direction: column;
+		row-gap: 30px;
+	}
+
+	&__button {
+		width: 100%;
+		display: flex;
+		justify-content: flex-end;
+		margin-bottom: 10px;
+	}
+
+	&__form {
+		display: flex;
+		flex-direction: column;
+		row-gap: 30px;
+	}
+
+	&__uploader {
+		font-size: 15px;
+		border: none;
+		border-radius: 10px;
+		padding: 10px;
+		transition: box-shadow .25s;
+		background-color: #ffffff;
+		display: flex;
+		column-gap: 10px;
+		align-items: center;
+		cursor: pointer;
+
+		input {
+			display: none;
+		}
+
+		&:hover,
+		&:focus {
+			box-shadow: 0 0 0 5px rgba(#72b2e4, .2);
+		}
+
+		&:focus {
+			outline: none;
+		}
 	}
 }
 
@@ -145,7 +192,32 @@
 				Subscriptions: {{ subscriptions.numberOfSubscriptions }}
 			</span>
 		</div>
+		<div class="profile__button" v-if="isMyProfile">
+			<Button @click="dialog = true">Create post</Button>
+		</div>
+		<div class="profile__posts">
+			<Post
+				v-for="post in posts"
+				:post="post"
+			/>
+		</div>
 	</div>
+	<Dialog v-model="dialog">
+		<form @submit.prevent class="profile__form">
+			<Input
+				v-model="title"
+				placeholder="Title"
+			/>
+			<label class="profile__uploader">
+				<File /> To add a file
+				<input
+					type="file"
+					@change="uploadFileHandler($event)"
+				/>
+			</label>
+			<Button @click="createPostHandler">Create</Button>
+		</form>
+	</Dialog>
 </template>
 
 <script setup>
@@ -155,7 +227,13 @@ import { useRoute, useRouter } from "vue-router"
 import { getUserById, updateUser } from "../requests/user.js"
 import { uploadFile } from "../requests/file.js"
 import { getSubscriptions, getSubscribers, subscribe, unsubscribe } from "../requests/subscriber.js"
+import { getAllPosts } from "../requests/post.js"
+import { createPost } from "../requests/post.js"
+import Dialog from "../ui/Dialog.vue"
+import Input from "../ui/Input.vue"
+import Post from "./Post.vue"
 import Button from "../ui/Button.vue"
+import File from "../icons/File.vue"
 
 const router = useRouter()
 const route = useRoute()
@@ -165,6 +243,33 @@ const isMyProfile = ref(false)
 const user = ref({})
 const subscribers = ref({})
 const subscriptions = ref({})
+const posts = ref([])
+const dialog = ref(false)
+const title = ref("")
+let fileIds = []
+
+const uploadFileHandler = event => {
+	uploadFile(event.target.files[0])
+		.then(({ data }) => {
+			fileIds.push(data.id)
+		})
+		.catch(({ message }) => {
+			console.log(message)
+		})
+}
+
+const createPostHandler = () => {
+	createPost(title.value, fileIds)
+		.then(({ data }) => {
+			posts.value.unshift(data)
+			fileIds = []
+			title.value = ""
+			dialog.value = false
+		})
+		.catch(({ message }) => {
+			console.log(message)
+		})
+}
 
 const updateAvatar = event => {
 	uploadFile(event.target.files[0])
@@ -231,6 +336,16 @@ const unsubscribeHandler = () => {
 		})
 }
 
+const getAllPostsHandler = userId => {
+	getAllPosts(userId, 10, 0)
+		.then(({ data }) => {
+			posts.value = data
+		})
+		.catch(({ message }) => {
+			console.log(message)
+		})
+}
+
 const getAvatar = computed(() => {
 	return user.value.avatarId ? `http://localhost:80/files/${user.value.avatarId}` :
 		`${import.meta.env.VITE_URL}/src/images/avatar.jpg`
@@ -247,12 +362,14 @@ const getUserByIdHandler = id => {
 		isMyProfile.value = true
 		getSubscribersHandler()
 		getSubscriptionsHandler()
+		getAllPostsHandler(+id)
 	} else {
 		getUserById(+id)
 			.then(({ data }) => {
 				user.value = data
 				getSubscribersHandler()
 				getSubscriptionsHandler()
+				getAllPostsHandler(+id)
 			})
 			.catch(({ message }) => {
 				console.log(message)

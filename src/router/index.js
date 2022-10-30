@@ -5,6 +5,8 @@ import Profile from "../components/Profile.vue"
 import Subscribers from "../components/Subscribers.vue"
 import Subscriptions from "../components/Subscriptions.vue"
 import People from "../components/People.vue"
+import Feed from "../components/Feed.vue"
+import Comments from "../components/Comments.vue"
 import Empty from "../layouts/Empty.vue"
 
 const routes = [
@@ -14,6 +16,8 @@ const routes = [
 	{ path: "/profile/:id/subscribers", component: Subscribers },
 	{ path: "/profile/:id/subscriptions", component: Subscriptions },
 	{ path: "/people", component: People },
+	{ path: "/posts/:id/comments", component: Comments },
+	{ path: "/feed", component: Feed },
 ]
 
 export default createRouter({

@@ -7,12 +7,13 @@
 	&__container {
 		width: calc(100vw - 270px);
 		height: 100vh;
-		padding: 30px 30px 0;
+		padding: 30px 30px 60px;
+		overflow-y: auto;
 	}
 
 	&__content {
 		margin: 0 auto;
-		max-width: 720px;
+		max-width: 730px;
 	}
 }
 </style>

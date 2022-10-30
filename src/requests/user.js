@@ -26,3 +26,7 @@ export const getUserById = id => {
 export const getAllUsers = username => {
 	return get(`/users?username=${username}`)
 }
+
+export const logout = () => {
+	return get("/logout")
+}

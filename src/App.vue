@@ -7,6 +7,7 @@
 	box-sizing: border-box;
 	font-family: roboto, serif;
 	font-size: 15px;
+	font-weight: 500;
 }
 
 body {

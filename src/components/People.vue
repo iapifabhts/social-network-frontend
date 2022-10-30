@@ -9,7 +9,7 @@
 	&__cards {
 		display: flex;
 		flex-direction: column;
-		row-gap: 30px;
+		row-gap: 10px;
 	}
 }
 </style>
