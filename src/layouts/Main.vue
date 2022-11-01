@@ -27,9 +27,11 @@
 			</div>
 		</div>
 	</div>
+	<Notifications />
 </template>
 
 <script setup>
 import Sidebar from "../components/Sidebar.vue"
+import Notifications from "../components/Notifications.vue"
 
 </script>

@@ -1,6 +1,7 @@
 import { ref } from "vue"
 import { defineStore } from "pinia"
 import { useRouter, useRoute } from "vue-router"
+import { subscribe } from "../requests/notification.js"
 
 export const useUserStore = defineStore("user", () => {
 	const isAuth = ref(false)
@@ -14,6 +15,7 @@ export const useUserStore = defineStore("user", () => {
 
 		if (route.name === "signIn" || route.name === "signUp") {
 			router.push(`/profile/${user.value.id}`)
+			subscribe()
 		}
 	}
 
