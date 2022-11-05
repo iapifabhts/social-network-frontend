@@ -122,8 +122,11 @@
 		margin-bottom: auto;
 	}
 
-	&__button {
+	&__buttons {
 		align-self: flex-end;
+		display: flex;
+		align-items: center;
+		column-gap: 10px;
 	}
 }
 
@@ -165,16 +168,21 @@
 				</label>
 				<div class="footer__content">
 					<h2 class="footer__username">{{ user.username }}</h2>
-					<Button
-						class="footer__button"
-						v-if="!isMyProfile && !subscribers.userSubscribed"
-						@click="subscribeHandler"
-					>Subscribe</Button>
-					<Button
-						class="footer__button"
-						v-else-if="!isMyProfile"
-						@click="unsubscribeHandler"
-					>Unsubscribe</Button>
+					<div class="footer__buttons" v-if="!isMyProfile">
+						<Button
+							@click="startDialogueHandler()"
+						>Start a dialogue</Button>
+						<Button
+							class="footer__button"
+							v-if="!subscribers.userSubscribed"
+							@click="subscribeHandler"
+						>Subscribe</Button>
+						<Button
+							class="footer__button"
+							v-else
+							@click="unsubscribeHandler"
+						>Unsubscribe</Button>
+					</div>
 				</div>
 			</footer>
 		</header>
@@ -227,8 +235,8 @@ import { useRoute, useRouter } from "vue-router"
 import { getUserById, updateUser } from "../requests/user.js"
 import { uploadFile } from "../requests/file.js"
 import { getSubscriptions, getSubscribers, subscribe, unsubscribe } from "../requests/subscriber.js"
-import { getAllPosts } from "../requests/post.js"
-import { createPost } from "../requests/post.js"
+import { getAllPosts, createPost } from "../requests/post.js"
+import { getDialogIdByMembers, getChatById, createChat } from "../requests/chat.js"
 import Dialog from "../ui/Dialog.vue"
 import Input from "../ui/Input.vue"
 import Post from "./Post.vue"
@@ -239,6 +247,7 @@ const router = useRouter()
 const route = useRoute()
 const store = useUserStore()
 
+const dialogId = ref(null)
 const isMyProfile = ref(false)
 const user = ref({})
 const subscribers = ref({})
@@ -330,7 +339,7 @@ const subscribeHandler = () => {
 }
 
 const unsubscribeHandler = () => {
-	unsubscribe(user.value.id)
+	unsubscribe(+user.value.id)
 		.then(({ data }) => {
 			subscribers.value = data
 		})
@@ -377,12 +386,40 @@ const getUserByIdHandler = id => {
 	}
 }
 
+const startDialogueHandler = () => {
+	if (!dialogId.value) {
+		createChat([+route.params.id])
+			.then(({ data }) => {
+				dialogId.value = data.id
+				router.push(`/chat/${data.id}`)
+			}).catch(resp => {
+			console.log(resp)
+		})
+		return
+	}
+	router.push(`/chat/${dialogId.value}`)
+}
+
+const getDialogId = id => {
+	getDialogIdByMembers(id)
+		.then(({ data }) => {
+			dialogId.value = data.id
+		})
+		.catch(({ response }) => {
+			if (response.status === 404) {
+				dialogId.value = null
+			}
+		})
+}
+
 onMounted(() => {
 	getUserByIdHandler(route.params.id)
+	getDialogId(route.params.id)
 })
 
 watch(route, (from, to) => {
 	getUserByIdHandler(to.params.id)
+	getDialogId(to.params.id)
 })
 
 </script>
